@@ -210,6 +210,7 @@ type (
 		Kubernetes              KubernetesData      `json:"Kubernetes"`
 		ComposeSyntaxMaxVersion string              `json:"ComposeSyntaxMaxVersion"`
 		SecuritySettings        EndpointSecuritySettings
+		LastCheckInDate         int64
 
 		// Deprecated fields
 		// Deprecated in DBVersion == 4
@@ -288,7 +289,7 @@ type (
 	// EndpointType represents the type of an endpoint
 	EndpointType int
 
-	// EndpointRelation represnts a endpoint relation object
+	// EndpointRelation represents a endpoint relation object
 	EndpointRelation struct {
 		EndpointID EndpointID
 		EdgeStacks map[EdgeStackID]bool
@@ -1013,7 +1014,7 @@ type (
 		DeleteResourceControl(ID ResourceControlID) error
 	}
 
-	// ReverseTunnelService represensts a service used to manage reverse tunnel connections.
+	// ReverseTunnelService represents a service used to manage reverse tunnel connections.
 	ReverseTunnelService interface {
 		StartTunnelServer(addr, port string, snapshotService SnapshotService) error
 		GenerateEdgeKey(url, host string, endpointIdentifier int) string
@@ -1055,7 +1056,7 @@ type (
 		GetNextIdentifier() int
 	}
 
-	// StackService represents a service for managing endpoint snapshots
+	// SnapshotService represents a service for managing endpoint snapshots
 	SnapshotService interface {
 		Start()
 		SetSnapshotInterval(snapshotInterval string) error
@@ -1367,6 +1368,7 @@ const (
 	EdgeAgentActive string = "ACTIVE"
 )
 
+// represents an authorization type
 const (
 	OperationDockerContainerArchiveInfo         Authorization = "DockerContainerArchiveInfo"
 	OperationDockerContainerList                Authorization = "DockerContainerList"
