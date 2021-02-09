@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -49,6 +50,8 @@ func (handler *Handler) endpointDockerhubStatus(w http.ResponseWriter, r *http.R
 	if err != nil {
 		return &httperror.HandlerError{http.StatusInternalServerError, "Unable to retrieve DockerHub token from DockerHub", err}
 	}
+
+	log.Printf("[DEBUG] [http,endpoints,dockerhub] [token: %s] [message: received dockerhub token]", token)
 
 	resp, err := getDockerHubLimits(httpClient, token)
 	if err != nil {
