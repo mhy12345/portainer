@@ -1,10 +1,10 @@
 angular.module('portainer.docker').controller('BuildImageController', [
   '$scope',
-  '$state',
+  '$async',
   'BuildService',
   'Notifications',
   'HttpRequestHelper',
-  function ($scope, $state, BuildService, Notifications, HttpRequestHelper) {
+  function ($scope, $async, BuildService, Notifications, HttpRequestHelper) {
     $scope.state = {
       BuildType: 'editor',
       actionInProgress: false,
@@ -44,42 +44,44 @@ angular.module('portainer.docker').controller('BuildImageController', [
       }
     }
 
-    $scope.buildImage = function () {
-      var buildType = $scope.state.BuildType;
+    $scope.buildImage = buildImage;
 
-      if (buildType === 'editor' && $scope.formValues.DockerFileContent === '') {
-        $scope.state.formValidationError = 'Dockerfile content must not be empty';
-        return;
-      }
+    async function buildImage() {
+      return $async(async () => {
+        var buildType = $scope.state.BuildType;
 
-      $scope.state.actionInProgress = true;
+        if (buildType === 'editor' && $scope.formValues.DockerFileContent === '') {
+          $scope.state.formValidationError = 'Dockerfile content must not be empty';
+          return;
+        }
 
-      var imageNames = $scope.formValues.ImageNames.filter(function filterNull(x) {
-        return x.Name;
-      }).map(function getNames(x) {
-        return x.Name;
-      });
+        $scope.state.actionInProgress = true;
 
-      var nodeName = $scope.formValues.NodeName;
-      HttpRequestHelper.setPortainerAgentTargetHeader(nodeName);
+        var imageNames = $scope.formValues.ImageNames.filter(function filterNull(x) {
+          return x.Name;
+        }).map(function getNames(x) {
+          return x.Name;
+        });
 
-      buildImageBasedOnBuildType(buildType, imageNames)
-        .then(function success(data) {
+        var nodeName = $scope.formValues.NodeName;
+        HttpRequestHelper.setPortainerAgentTargetHeader(nodeName);
+
+        try {
+          const data = await buildImageBasedOnBuildType(buildType, imageNames);
           $scope.buildLogs = data.buildLogs;
           $scope.state.activeTab = 1;
           if (data.hasError) {
-            Notifications.error('An error occured during build', { msg: 'Please check build logs output' });
+            Notifications.error('An error occurred during build', { msg: 'Please check build logs output' });
           } else {
             Notifications.success('Image successfully built');
           }
-        })
-        .catch(function error(err) {
+        } catch (err) {
           Notifications.error('Failure', err, 'Unable to build image');
-        })
-        .finally(function final() {
+        } finally {
           $scope.state.actionInProgress = false;
-        });
-    };
+        }
+      });
+    }
 
     $scope.validImageNames = function () {
       for (var i = 0; i < $scope.formValues.ImageNames.length; i++) {
