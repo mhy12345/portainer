@@ -17,6 +17,11 @@ import (
 	"github.com/portainer/portainer/api/http/client"
 )
 
+const (
+	tokenURL      = "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull"
+	rateLimitsURL = "https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest"
+)
+
 type dockerhubStatusResponse struct {
 	Remaining int `json:"remaining"`
 	Limit     int `json:"limit"`
@@ -66,9 +71,7 @@ func getDockerHubToken(httpClient *client.HTTPClient, dockerhub *portainer.Docke
 		Token string `json:"token"`
 	}
 
-	requestURL := "https://auth.docker.io/token?service=registry.docker.io&scope=repository:ratelimitpreview/test:pull"
-
-	req, err := http.NewRequest(http.MethodGet, requestURL, nil)
+	req, err := http.NewRequest(http.MethodGet, tokenURL, nil)
 	if err != nil {
 		return "", err
 	}
@@ -98,9 +101,7 @@ func getDockerHubToken(httpClient *client.HTTPClient, dockerhub *portainer.Docke
 
 func getDockerHubLimits(httpClient *client.HTTPClient, token string) (*dockerhubStatusResponse, error) {
 
-	requestURL := "https://registry-1.docker.io/v2/ratelimitpreview/test/manifests/latest"
-
-	req, err := http.NewRequest(http.MethodHead, requestURL, nil)
+	req, err := http.NewRequest(http.MethodHead, rateLimitsURL, nil)
 	if err != nil {
 		return nil, err
 	}
