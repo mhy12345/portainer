@@ -115,11 +115,11 @@
                     </tr>
                     <tr ng-if="ctrl.isNFSVolume()">
                       <td>NFS Address</td>
-                      <td>{{ ctrl.volume.PersistentVolumeClaim.PersistentVolume.NFSAddress }}</td>
+                      <td>{{ ctrl.volume.PersistentVolume.NFSAddress }}</td>
                     </tr>
                     <tr ng-if="ctrl.isNFSVolume()">
                       <td>NFS Mount point</td>
-                      <td>{{ ctrl.volume.PersistentVolumeClaim.PersistentVolume.NFSMountPoint }}</td>
+                      <td>{{ ctrl.volume.PersistentVolume.NFSMountPoint }}</td>
                     </tr>
                   </tbody>
                 </table>

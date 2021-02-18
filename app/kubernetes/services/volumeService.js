@@ -25,10 +25,11 @@ class KubernetesVolumeService {
   async getAsync(namespace, name) {
     try {
       const [pvc, pool] = await Promise.all([await this.KubernetesPersistentVolumeClaimService.get(namespace, name), await this.KubernetesResourcePoolService.get(namespace)]);
+      let pv = undefined;
       if (pvc.PersistentVolumeName) {
-        pvc.PersistentVolume = await this.KubernetesPersistentVolumeService.get(pvc.PersistentVolumeName);
+        pv = await this.KubernetesPersistentVolumeService.get(pvc.PersistentVolumeName);
       }
-      return KubernetesVolumeConverter.pvcToVolume(pvc, pool);
+      return KubernetesVolumeConverter.apiToVolume(pvc, pv, pool);
     } catch (err) {
       throw err;
     }
@@ -36,18 +37,23 @@ class KubernetesVolumeService {
 
   async getAllAsync(namespace) {
     try {
-      const pools = await this.KubernetesResourcePoolService.get(namespace);
+      const poolsRaw = await this.KubernetesResourcePoolService.get(namespace);
+      const pools = namespace ? [poolsRaw] : poolsRaw; // if namespace is passed we only get 1 RP and not a list of RP
       const res = await Promise.all(
         _.map(pools, async (pool) => {
           const pvcs = await this.KubernetesPersistentVolumeClaimService.get(pool.Namespace.Name);
+          const pvs = [];
           await Promise.all(
             _.map(pvcs, async (pvc) => {
               if (pvc.PersistentVolumeName) {
-                pvc.PersistentVolume = await this.KubernetesPersistentVolumeService.get(pvc.PersistentVolumeName);
+                pvs.push(await this.KubernetesPersistentVolumeService.get(pvc.PersistentVolumeName));
               }
             })
           );
-          return _.map(pvcs, (pvc) => KubernetesVolumeConverter.pvcToVolume(pvc, pool));
+          return _.map(pvcs, (pvc) => {
+            const pv = pvc.PersistentVolumeName ? _.find(pvs, { Name: pvc.PersistentVolumeName }) : undefined;
+            return KubernetesVolumeConverter.apiToVolume(pvc, pv, pool);
+          });
         })
       );
       return _.flatten(res);
@@ -64,17 +70,16 @@ class KubernetesVolumeService {
   }
 
   /**
-   * CREATE
-   * fv = KubernetesPersistentVolume
+   * CREATE all KubernetesVolume composite elements (but the ResourcePool)
+   * @param {KubernetesVolumeFormValues} fv 
    */
-
   create(fv) {
     return this.$async(async () => {
       try {
         const pv = KubernetesPersistentVolumeConverter.formValuesToPersistentVolume(fv);
-        await this.KubernetesPersistentVolumeService.create(pv);
-        const pvc = KubernetesPersistentVolumeClaimConverter.volumesFormValuesToVolumeClaims(fv);
-        pvc.PersistentVolume = pv;
+        const data = await this.KubernetesPersistentVolumeService.create(pv);
+        const pvc = KubernetesPersistentVolumeClaimConverter.volumeFormValuesToVolumeClaim(fv);
+        pvc.PersistentVolumeName = data.metadata.name;
         await this.KubernetesPersistentVolumeClaimService.create(pvc);
       } catch (err) {
         throw err;
@@ -87,10 +92,9 @@ class KubernetesVolumeService {
    */
   async deleteAsync(volume) {
     try {
-      const pv = volume.PersistentVolumeClaim.PersistentVolume;
       await this.KubernetesPersistentVolumeClaimService.delete(volume.PersistentVolumeClaim);
-      if (pv) {
-        await this.KubernetesPersistentVolumeService.delete(pv);
+      if (volume.PersistentVolume) {
+        await this.KubernetesPersistentVolumeService.delete(volume.PersistentVolume);
       }
     } catch (err) {
       throw err;
