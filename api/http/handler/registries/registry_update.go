@@ -19,6 +19,7 @@ type registryUpdatePayload struct {
 	Password           *string
 	UserAccessPolicies portainer.UserAccessPolicies
 	TeamAccessPolicies portainer.TeamAccessPolicies
+	Quay               *portainer.QuayRegistryData
 }
 
 func (payload *registryUpdatePayload) Validate(r *http.Request) error {
@@ -88,6 +89,10 @@ func (handler *Handler) registryUpdate(w http.ResponseWriter, r *http.Request) *
 
 	if payload.TeamAccessPolicies != nil {
 		registry.TeamAccessPolicies = payload.TeamAccessPolicies
+	}
+
+	if payload.Quay != nil {
+		registry.Quay = *payload.Quay
 	}
 
 	err = handler.DataStore.Registry().UpdateRegistry(registry.ID, registry)
