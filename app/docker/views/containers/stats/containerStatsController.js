@@ -29,13 +29,7 @@ angular.module('portainer.docker').controller('ContainerStatsController', [
     }
 
     function updateNetworkChart(stats, chart) {
-      if (stats.Networks.length > 0) {
-        var rx = stats.Networks[0].rx_bytes;
-        var tx = stats.Networks[0].tx_bytes;
-        var label = moment(stats.read).format('HH:mm:ss');
-
-        ChartService.UpdateNetworkChart(label, rx, tx, chart);
-      }
+      ChartService.UpdateNetworkChart(stats, chart);
     }
 
     function updateMemoryChart(stats, chart) {

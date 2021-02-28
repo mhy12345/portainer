@@ -239,6 +239,17 @@ angular.module('portainer.app', ['portainer.oauth']).config([
       },
     };
 
+    var blockchain = {
+      name: 'portainer.blockchain',
+      url: '/blockchain',
+      views: {
+        'content@': {
+          templateUrl: './views/blockchain/blockchain.html',
+          controller: 'BlockchainController',
+        },
+      },
+    };
+
     var init = {
       name: 'portainer.init',
       abstract: true,
@@ -418,6 +429,7 @@ angular.module('portainer.app', ['portainer.oauth']).config([
     $stateRegistryProvider.register(groupAccess);
     $stateRegistryProvider.register(groupCreation);
     $stateRegistryProvider.register(home);
+    $stateRegistryProvider.register(blockchain);
     $stateRegistryProvider.register(init);
     $stateRegistryProvider.register(initEndpoint);
     $stateRegistryProvider.register(initAdmin);

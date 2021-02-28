@@ -90,7 +90,7 @@ export function ContainerStatsViewModel(data) {
   if (data.cpu_stats.cpu_usage.percpu_usage) {
     this.CPUCores = data.cpu_stats.cpu_usage.percpu_usage.length;
   }
-  this.Networks = _.values(data.networks);
+  this.Networks = data.networks;//_.values(data.networks);
 }
 
 export function ContainerDetailsViewModel(data) {

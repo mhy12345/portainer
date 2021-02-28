@@ -111,7 +111,9 @@ angular.module('portainer.app').factory('ChartService', [
         type: 'line',
         data: {
           labels: [],
-          datasets: [
+          
+          datasets: [],
+          /*
             {
               label: 'RX on eth0',
               data: [],
@@ -134,7 +136,7 @@ angular.module('portainer.app').factory('ChartService', [
               pointRadius: 2,
               borderWidth: 2,
             },
-          ],
+          ],*/
         },
         options: defaultChartOptions('average', byteBasedTooltipLabel, byteBasedAxisLabel),
       });
@@ -177,11 +179,52 @@ angular.module('portainer.app').factory('ChartService', [
     };
     service.UpdateCPUChart = UpdateChart;
 
-    service.UpdateNetworkChart = function (label, rx, tx, chart) {
+    service.UpdateNetworkChart = function (stats, chart) {
+      
+      var label = moment(stats.read).format('HH:mm:ss');
       chart.data.labels.push(label);
-      chart.data.datasets[0].data.push(rx);
-      chart.data.datasets[1].data.push(tx);
-
+      for (let dev of Object.keys(stats.Networks)) {
+        var rx = stats.Networks[dev].rx_bytes;
+        var tx = stats.Networks[dev].tx_bytes;
+        let rx_item = chart.data.datasets.find((row) => {return row.label === 'RX on '+dev});
+        if (!rx_item) {
+          var r = Math.floor(Math.random() * 256);
+          var g = Math.floor(Math.random() * 256);
+          var b = Math.floor(Math.random() * 256);
+          chart.data.datasets.push({
+            label: 'RX on '+dev,
+            data: [],
+            fill: false,
+            backgroundColor: `rgba(${r},${g},${b},0.4)`,
+            borderColor: `rgba(${r},${g},${b},0.6)`,
+            pointBackgroundColor: `rgba(${r},${g},${b},1)`,
+            pointBorderColor: `rgba(${r},${g},${b},1)`,
+            pointRadius: 2,
+            borderWidth: 2,
+          });
+          rx_item = chart.data.datasets[chart.data.datasets.length-1];
+        }
+        let tx_item = chart.data.datasets.find((row) => {return row.label === 'TX on '+dev});
+        if (!tx_item) {
+          var r = Math.floor(Math.random() * 256);
+          var g = Math.floor(Math.random() * 256);
+          var b = Math.floor(Math.random() * 256);
+          chart.data.datasets.push({
+            label: 'TX on '+dev,
+            data: [],
+            fill: false,
+            backgroundColor: `rgba(${r},${g},${b},0.4)`,
+            borderColor: `rgba(${r},${g},${b},0.6)`,
+            pointBackgroundColor: `rgba(${r},${g},${b},1)`,
+            pointBorderColor: `rgba(${r},${g},${b},1)`,
+            pointRadius: 2,
+            borderWidth: 2,
+          });
+          tx_item = chart.data.datasets[chart.data.datasets.length-1]
+        }
+        rx_item.data.push(rx);             
+        tx_item.data.push(tx);  
+      }
       LimitChartItems(chart);
 
       chart.update(0);
