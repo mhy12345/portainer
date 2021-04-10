@@ -40,6 +40,10 @@ angular.module('portainer.docker').factory('Network', [
           method: 'POST',
           params: { action: 'disconnect' },
         },
+        bandwidth: {
+          method: 'POST',
+          params: { action: 'bandwidth' },
+        },
       }
     );
   },

@@ -86,6 +86,14 @@ angular.module('portainer.docker').factory('NetworkService', [
       return Network.connect({ id: networkId }, payload).$promise;
     };
 
+    service.setBandwidth = function (networkId, containerId, val) {
+      var payload = {
+        Container: containerId,
+        Value: val,
+      };
+      return Network.bandwidth({ id: networkId }, payload).$promise;
+    };
+
     return service;
   },
 ]);
