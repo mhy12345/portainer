@@ -22,17 +22,7 @@ module.exports = {
       {
         test: /\.js$/,
         enforce: 'pre',
-        use: [
-          {
-            loader: 'source-map-loader',
-            options: {
-              filterSourceMappingUrl: (_, resourcePath) => {
-                // ignores `chardet` missing sourcemaps
-                return !/node_modules\/chardet/i.test(resourcePath);
-              },
-            },
-          },
-        ],
+        use: ['source-map-loader'],
       },
       {
         test: /\.js$/,
@@ -75,7 +65,7 @@ module.exports = {
     compress: true,
     port: 8999,
     proxy: {
-      '/api': 'http://0.0.0.0:9000',
+      '/api': 'http://localhost:9000',
     },
     open: true,
   },

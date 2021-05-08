@@ -34,18 +34,6 @@ angular.module('portainer.docker').controller('NetworkController', [
         });
     };
 
-    $scope.containerShapebandwidth = function containerShapebandwidth(network, container) {
-      HttpRequestHelper.setPortainerAgentTargetHeader(container.NodeName);
-      NetworkService.setBandwidth($transition$.params().id, container.Id, 100)
-        .then(function success() {
-          Notifications.success('Container bandwidth set', $transition$.params().id);
-          $state.go('docker.networks.network', { id: network.Id }, { reload: true });
-        })
-        .catch(function error(err) {
-          Notifications.error('Failure', err, 'Unable to set container bandwdith');
-        });
-    };
-
     $scope.isSystemNetwork = function () {
       return $scope.network && NetworkHelper.isSystemNetwork($scope.network);
     };
